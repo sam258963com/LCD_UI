@@ -28,6 +28,8 @@
 *.app
 
 # Used by CodeBlock
+bin
+obj
 *.cbp
 *.layout
 

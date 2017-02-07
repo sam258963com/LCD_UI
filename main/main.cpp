@@ -75,10 +75,6 @@ enum controlState
 
 /**  **/
 
-const uint8_t menuLength[] = {
-    2
-};
-
 // typedef bool submenu_t;
 typedef struct {
     char title[LCD_COLS+1];
@@ -93,7 +89,13 @@ PROGMEM const menulist menu_0[] = {
 {""                     , (void*)NULL     , false}
 };
 
-mylist<void*> menu_stack;
+typedef struct {
+    uint8_t item_head;
+    uint8_t item_select;
+    void *menuptr;
+}menu_item;
+
+mylist<menu_item> menu_stack;
 
 /** ============ arduino main ============ **/
 
@@ -202,7 +204,7 @@ uint8_t item_length = 0;
 
 #define MENU_READ \
             menulist tempItem; \
-            memcpy_P(&tempItem, (menu_stack.end()),sizeof(menulist)); \
+            memcpy_P(&tempItem, (menu_stack.end()->menuptr),sizeof(menulist)); \
             char *temp = tempItem.title;
 
 #define FILE_READ \
@@ -222,6 +224,7 @@ uint8_t item_length = 0;
                 if(IF2) \
                 { \
                     item_head DIR_OPR; \
+                    (menu_stack.end()->item_head) DIR_OPR; \
                     READTYPE; \
                     menu ## DIR (temp); \
                     PRINT_ITEM_STATE; \
@@ -231,6 +234,7 @@ uint8_t item_length = 0;
                 else \
                 { \
                     item_select DIR_OPR; \
+                    (menu_stack.end()->item_select) DIR_OPR; \
                     menuCursor ## DIR (); \
                     PRINT_ITEM_STATE; \
                     return ; \
@@ -301,7 +305,7 @@ void enterCallback()
         // item_head = 0;
         // item_length = 0;
 
-        menu_stack.add((void*)&menu_0);
+        menu_stack.add(menu_item{0,0,(void*)&menu_0});
         menuInit();
 
         // print menu list
@@ -327,10 +331,10 @@ void enterCallback()
         {
             // enter select
             menulist tempItem;
-            memcpy_P(&tempItem, (menu_stack.end()+(item_head+item_select)*sizeof(menulist)),sizeof(menulist));
+            memcpy_P(&tempItem, ((menu_stack.end()->menuptr)+(item_head+item_select)*sizeof(menulist)),sizeof(menulist));
             if(tempItem.hasSubmenu)
             {
-                menu_stack.add(tempItem.pointto);
+                menu_stack.add({0,0,tempItem.pointto});
 
                 printmenulist();
             }
@@ -346,6 +350,7 @@ void enterCallback()
         if(item_head==0&&item_select==0)
         {
             menuInit();
+            menu_stack.pop_back();
             if(path.size()==0)
             {
                 flag_screen = MENUPAGE;
@@ -365,6 +370,7 @@ void enterCallback()
                 char temp[NAME_MAX_LENGTH];
                 fileList[item_head+item_select-1].getName(temp,NAME_MAX_LENGTH-1);
                 path.add(temp);
+                menu_stack.add({0,0,(void*)NULL});
                 SD.chdir(temp,true);
                 getfilelist();
                 printfilelist();
@@ -373,6 +379,9 @@ void enterCallback()
             {
                 // clear the path first, it might waste space
                 path.clear();
+
+                // clear menu stack
+                menu_stack.clear();
 
                 runfile = fileList[item_head+item_select-1];
                 #if defined(DEBUG)
@@ -446,6 +455,7 @@ void homing ()
 void SDselect ()
 {
     flag_screen = FILEPAGE;
+    menu_stack.add({0,0,(void*)NULL});
     if(!SD.begin())
     {
         #if defined(DEBUG)
@@ -571,15 +581,15 @@ int fileCompare(const void* a,const void* b)
 // use to print first n items
 void printmenulist()
 {
-    item_select = 0;
-    item_head = 0;
+    item_select = menu_stack.end()->item_select;
+    item_head = menu_stack.end()->item_head;
     item_length = 0;
-    menuCursorMove(1);
+    menuCursorMove(item_select+1);
     // print menu list
     for(;;item_length++)
     {
         menulist tempItem;
-        memcpy_P(&tempItem, (menu_stack.end()+(item_length)*sizeof(menulist)),sizeof(menulist));
+        memcpy_P(&tempItem, (menu_stack.end()->menuptr+(item_length)*sizeof(menulist)),sizeof(menulist));
         if(tempItem.title[0]=='\0') break;
         if(item_length<LCD_ROWS)
         {
@@ -595,9 +605,9 @@ void printmenulist()
 // use to print first n items
 void printfilelist()
 {
-    item_select = 0;
-    item_head = 0;
-    menuCursorMove(1);
+    item_select = menu_stack.end()->item_select;
+    item_head = menu_stack.end()->item_head;
+    menuCursorMove(item_select+1);
     // first item is back to previous directory
     menuDisplay_P(PSTR("../"),1);
     #if defined(DEBUG)

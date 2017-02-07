@@ -15,8 +15,8 @@ class mylist
         // content control
         bool add(const listtype);
         void pop_back();
-        listtype begin() { return _size>0?container[0]:NULL; };
-        listtype end() { return _size>0?container[_size-1]:NULL; };
+        listtype* begin() { return container; };
+        listtype* end() { return container+_size-1; };
         listtype get(uint16_t);
         listtype& operator[] (size_t i) { return *(container+i); };
         const listtype& operator[] (size_t i) const { return *(container+i); };
@@ -74,7 +74,8 @@ bool mylist<listtype>::add(const listtype value)
 template<class listtype>
 void mylist<listtype>::pop_back()
 {
-    _size--;
+    if(_size) _size--;
+    if(!_size) this->clear();
 }
 
 template<class listtype>

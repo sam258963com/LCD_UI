@@ -198,7 +198,7 @@ void menuDown(const char *item)
 
 void menuUp(const char *item)
 {
-    for(int j=_rows-1;j>1;j--)
+    for(int j=_rows-1;j>=1;j--)
     {
         menuDisplay(displaymem+1+_cols*(j-1),j+1);
     }

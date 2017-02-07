@@ -202,15 +202,24 @@ uint8_t item_length = 0;
 #define PRINT_ITEM
 #endif //DEBUG
 
-#define MENU_READ \
+#define MENU_READ_U \
             menulist tempItem; \
-            memcpy_P(&tempItem, (menu_stack.end()->menuptr),sizeof(menulist)); \
+            memcpy_P(&tempItem, (menu_stack.end()->menuptr)+(item_head)*sizeof(menulist),sizeof(menulist)); \
             char *temp = tempItem.title;
 
-#define FILE_READ \
+#define MENU_READ_D \
+            menulist tempItem; \
+            memcpy_P(&tempItem, (menu_stack.end()->menuptr)+(item_head+item_select)*sizeof(menulist),sizeof(menulist)); \
+            char *temp = tempItem.title;
+
+#define FILE_READ_U \
             char temp[NAME_MAX_LENGTH]; \
             if(item_head==0) strcpy_P(temp, PSTR("../")); \
-            else fileList[item_head + item_select -1].getName(temp,NAME_MAX_LENGTH-1);
+            else fileList[item_head - 1].getName(temp,NAME_MAX_LENGTH-1);
+
+#define FILE_READ_D \
+            char temp[NAME_MAX_LENGTH]; \
+            fileList[item_head + item_select -1].getName(temp,NAME_MAX_LENGTH-1);
 
 // MOVECHECK(MENU_READ,DOWN)
 #define MOVECHECK(READTYPE,IF,IF2,DIR,DIR_OPR) \
@@ -252,11 +261,11 @@ void downCallback()
     }
     else if(flag_screen == MENUPAGE)
     {
-        MOVECHECK(MENU_READ,item_select+item_head+1 == item_length,item_select+1 == LCD_ROWS,Down,++);
+        MOVECHECK(MENU_READ_D,item_select+item_head+1 == item_length,item_select+1 == LCD_ROWS,Down,++);
     }
     else if(flag_screen == FILEPAGE)
     {
-        MOVECHECK(FILE_READ,item_select+item_head == item_length,item_select+1 == LCD_ROWS,Down,++);
+        MOVECHECK(FILE_READ_D,item_select+item_head == item_length,item_select+1 == LCD_ROWS,Down,++);
     }
     else
     {
@@ -275,11 +284,11 @@ void upCallback()
     }
     else if(flag_screen == MENUPAGE)
     {
-        MOVECHECK(MENU_READ,item_select+item_head==0,item_select == 0,Up,--);
+        MOVECHECK(MENU_READ_U,item_select+item_head==0,item_select == 0,Up,--);
     }
     else if(flag_screen == FILEPAGE)
     {
-        MOVECHECK(FILE_READ,item_select+item_head==0,item_select == 0,Up,--);
+        MOVECHECK(FILE_READ_U,item_select+item_head==0,item_select == 0,Up,--);
     }
     else
     {
@@ -608,15 +617,24 @@ void printfilelist()
     item_select = menu_stack.end()->item_select;
     item_head = menu_stack.end()->item_head;
     menuCursorMove(item_select+1);
+    int i;
     // first item is back to previous directory
-    menuDisplay_P(PSTR("../"),1);
+    if(!item_head)
+    {
+        menuDisplay_P(PSTR("../"),1);
+        i=2;
+    }
+    else
+    {
+        i=1;
+    }
     #if defined(DEBUG)
     Serial.println(F("../"));
     #endif // defined
-    for(int i=2;i<=LCD_ROWS;i++)
+    for(;i<=LCD_ROWS;i++)
     {
         char temp[NAME_MAX_LENGTH];
-        fileList[i-2].getName(temp,NAME_MAX_LENGTH-2);
+        fileList[i-2+item_head].getName(temp,NAME_MAX_LENGTH-2);
         if(fileList[i-2].isDir()) strcat_P(temp,PSTR("/"));
         menuDisplay(temp,i);
 

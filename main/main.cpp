@@ -509,7 +509,7 @@ void getfilelist()
 	  }
 	  basefile.close();
     }
-    fileList.sort(fileCompare);
+    // fileList.sort(fileCompare);
     item_length = fileList.size();
     #if defined(DEBUG)
     Serial.println((int)item_length);

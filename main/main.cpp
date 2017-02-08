@@ -386,6 +386,11 @@ void enterCallback()
             }
             else // is file
             {
+                if(bitRead(flag_controlState,RUNNING))
+                {
+                    return ;
+                }
+
                 // clear the path first, it might waste space
                 path.clear();
 

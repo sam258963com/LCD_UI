@@ -266,13 +266,17 @@ void progressBar(int8_t progress)
 {
     lcdsc.home();
     if(progress>=100||progress<0) progress = 0;
-    printf(progress,2);
+    printf(progress,2,true);
     lcdsc.moveCursorRight();
     for(uint8_t i=0;i<PROGRESSBAR_LENGTH;i++)
     {
         if(progress>0)
         {
+            #if defined(LCD_12864)
+            lcdsc.write(0x08);
+            #else
             lcdsc.write(0xFF);
+            #endif // 12864
             progress-=6;
         }
         else lcdsc.write(' ');

@@ -81,7 +81,7 @@ typedef int format_t;
     #define STATUS_STOP_POS 0
     #define STATUS_LENGTH 5
 
-    #define PROGRESSBAR_LENGTH 16
+    #define PROGRESSBAR_LENGTH 10
 
     #define TIME_ROW 1
     #define TIME_RUN 0

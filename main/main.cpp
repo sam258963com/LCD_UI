@@ -449,7 +449,7 @@ void act ()
         {
             statusSet(STATUS_RUN);
             customtime(millis()-run_start_time);
-            progressBar(runfile.curPosition()/runfile.fileSize());
+            progressBar(runfile.curPosition()*100/runfile.fileSize());
         }
         else
         {

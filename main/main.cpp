@@ -504,7 +504,7 @@ void getfilelist()
 	  }
 	  basefile.close();
     }
-    //fileList.sort(fileCompare);
+    fileList.sort(fileCompare);
     item_length = fileList.size();
     #if defined(DEBUG)
     Serial.println((int)item_length);
@@ -577,12 +577,12 @@ int fileCompare(const void* a,const void* b)
 	((SdBaseFile*)b)->dirEntry(&_b);
     if(_a.lastWriteDate==_b.lastWriteDate)
 	{
-		if(_a.lastWriteTime < _b.lastWriteTime) {return -1;}
-		if(_a.lastWriteTime > _b.lastWriteTime) {return  1;}
+		if(_a.lastWriteTime < _b.lastWriteTime) {return  1;}
+		if(_a.lastWriteTime > _b.lastWriteTime) {return -1;}
 		return fileCompareName(a,b);
 	}
-    else if (_a.lastWriteDate > _b.lastWriteDate) {return 1;}
-    else return -1;
+    else if (_a.lastWriteDate > _b.lastWriteDate) {return -1;}
+    else return 1;
 }
 
 /** other **/

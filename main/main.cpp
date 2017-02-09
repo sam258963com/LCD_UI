@@ -518,14 +518,13 @@ void getfilelist()
     fileList.clear();
     for(;basefile.openNext(SD.vwd(),O_READ);)
     {
-        Serial.println(basefile.dirIndex());
 	  if(!basefile.isHidden() && !basefile.isSystem())
 	  {
 		fileList.add(basefile.dirIndex());
 	  }
 	  basefile.close();
     }
-    //fileList.sort(fileCompare);
+    fileList.sort(fileCompare);
     item_length = fileList.size();
     #if defined(DEBUG)
     Serial.println((int)item_length);
@@ -580,13 +579,6 @@ int fileCompare(const void* a,const void* b)
     SdBaseFile a_file,b_file;
     a_file.open(SD.vwd(),*((uint16_t*)a),O_READ);
     b_file.open(SD.vwd(),*((uint16_t*)b),O_READ);
-    Serial.println(F("check point 1"));
-    char name1[NAME_MAX_LENGTH],name2[NAME_MAX_LENGTH];
-	a_file.getName(name1,NAME_MAX_LENGTH-1);
-	b_file.getName(name2,NAME_MAX_LENGTH-1);
-	Serial.println(name1);Serial.println(name2);
-	while(!Serial.available()) ;
-	while(Serial.available() && Serial.read()) delay(10);
 	if(a_file.isDir())
 	{
 		if(b_file.isDir())
@@ -610,7 +602,7 @@ int fileCompare(const void* a,const void* b)
 	{
 		if(_a.lastWriteTime < _b.lastWriteTime) {return  1;}
 		if(_a.lastWriteTime > _b.lastWriteTime) {return -1;}
-		return fileCompareName(a,b);
+		return fileCompareName(&a_file,&b_file);
 	}
     else if (_a.lastWriteDate > _b.lastWriteDate) {return -1;}
     return 1;

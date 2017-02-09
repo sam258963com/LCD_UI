@@ -270,12 +270,14 @@ void progressBar(int8_t progress)
     lcdsc.moveCursorRight();
     for(uint8_t i=0;i<PROGRESSBAR_LENGTH;i++)
     {
+        if(progress-100/(PROGRESSBAR_LENGTH+1)>0)
         {
             #if defined(LCD_12864)
             lcdsc.write(0x08);
             #else
             lcdsc.write(0xFF);
             #endif // 12864
+            progress-=100/(PROGRESSBAR_LENGTH+1);
         }
         else lcdsc.write(' ');
     }

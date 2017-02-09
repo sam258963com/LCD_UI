@@ -15,7 +15,6 @@
 keyDetect key;
 
 SdFat SD;
-SdBaseFile basefile;
 SdBaseFile runfile;
 mylist<SdBaseFile> fileList;
 stringlist path;
@@ -215,11 +214,16 @@ uint8_t item_length = 0;
 #define FILE_READ_U \
             char temp[NAME_MAX_LENGTH]; \
             if(item_head==0) strcpy_P(temp, PSTR("../")); \
-            else fileList[item_head - 1].getName(temp,NAME_MAX_LENGTH-1);
+            else \
+            { \
+                fileList[item_head - 1].getName(temp,NAME_MAX_LENGTH-1); \
+                if(fileList[item_head - 1].isDir()) strcat_P(temp,PSTR("/")); \
+            }
 
 #define FILE_READ_D \
             char temp[NAME_MAX_LENGTH]; \
-            fileList[item_head + item_select -1].getName(temp,NAME_MAX_LENGTH-1);
+            fileList[item_head + item_select -1].getName(temp,NAME_MAX_LENGTH-1); \
+            if(fileList[item_head + item_select -1].isDir()) strcat_P(temp,PSTR("/"));
 
 // MOVECHECK(MENU_READ,DOWN)
 #define MOVECHECK(READTYPE,IF,IF2,DIR,DIR_OPR) \
@@ -499,6 +503,7 @@ inline void path_popback()
 
 void getfilelist()
 {
+    SdBaseFile basefile;
     fileList.clear();
     SD.vwd()->rewind();
     for(;basefile.openNext(SD.vwd(),O_READ);)

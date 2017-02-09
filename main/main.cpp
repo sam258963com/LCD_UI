@@ -6,6 +6,8 @@
 #include "config.h"
 #include "stringlist.h"
 
+// #include <FreeStack.h>
+
 /**
  *  If you don't have this library, please download it at
  *  https://github.com/greiman/SdFat
@@ -16,7 +18,7 @@ keyDetect key;
 
 SdFat SD;
 SdBaseFile runfile;
-mylist<SdBaseFile> fileList;
+mylist<uint16_t> fileList;
 stringlist path;
 
 #define EOF -1
@@ -216,14 +218,20 @@ uint8_t item_length = 0;
             if(item_head==0) strcpy_P(temp, PSTR("../")); \
             else \
             { \
-                fileList[item_head - 1].getName(temp,NAME_MAX_LENGTH-1); \
-                if(fileList[item_head - 1].isDir()) strcat_P(temp,PSTR("/")); \
+                SdBaseFile basefile; \
+                basefile.open(SD.vwd(),fileList[item_head - 1],O_READ); \
+                basefile.getName(temp,NAME_MAX_LENGTH-2); \
+                if(basefile.isDir()) strcat_P(temp,PSTR("/")); \
+                basefile.close(); \
             }
 
 #define FILE_READ_D \
             char temp[NAME_MAX_LENGTH]; \
-            fileList[item_head + item_select -1].getName(temp,NAME_MAX_LENGTH-1); \
-            if(fileList[item_head + item_select -1].isDir()) strcat_P(temp,PSTR("/"));
+            SdBaseFile basefile; \
+            basefile.open(SD.vwd(),fileList[item_head + item_select -1],O_READ); \
+            basefile.getName(temp,NAME_MAX_LENGTH-1); \
+            if(basefile.isDir()) strcat_P(temp,PSTR("/")); \
+            basefile.close();
 
 // MOVECHECK(MENU_READ,DOWN)
 #define MOVECHECK(READTYPE,IF,IF2,DIR,DIR_OPR) \
@@ -378,10 +386,13 @@ void enterCallback()
         }
         else
         {
-            if(fileList[item_head+item_select-1].isDir())
+            SdBaseFile basefile;
+            basefile.open(SD.vwd(),fileList[item_head+item_select-1],O_READ);
+            if(basefile.isDir())
             {
                 char temp[NAME_MAX_LENGTH];
-                fileList[item_head+item_select-1].getName(temp,NAME_MAX_LENGTH-1);
+                basefile.getName(temp,NAME_MAX_LENGTH-1);
+                basefile.close();
                 path.add(temp);
                 menu_stack.add({0,0,(void*)NULL});
                 SD.chdir(temp,true);
@@ -401,7 +412,7 @@ void enterCallback()
                 // clear menu stack
                 menu_stack.clear();
 
-                runfile = fileList[item_head+item_select-1];
+                runfile = basefile;
                 #if defined(DEBUG)
                 /*
                 Serial.print(F("Select file:"));
@@ -473,7 +484,6 @@ void homing ()
 void SDselect ()
 {
     flag_screen = FILEPAGE;
-    menu_stack.add({0,0,(void*)NULL});
     if(!SD.begin())
     {
         #if defined(DEBUG)
@@ -484,6 +494,7 @@ void SDselect ()
         flag_screen = SDERRORPAGE;
         return ;
     }
+    menu_stack.add({0,0,(void*)NULL});
     // clear path
     path.clear();
     getfilelist();
@@ -505,16 +516,16 @@ void getfilelist()
 {
     SdBaseFile basefile;
     fileList.clear();
-    SD.vwd()->rewind();
     for(;basefile.openNext(SD.vwd(),O_READ);)
     {
+        Serial.println(basefile.dirIndex());
 	  if(!basefile.isHidden() && !basefile.isSystem())
 	  {
-		fileList.add(basefile);
+		fileList.add(basefile.dirIndex());
 	  }
 	  basefile.close();
     }
-    // fileList.sort(fileCompare);
+    //fileList.sort(fileCompare);
     item_length = fileList.size();
     #if defined(DEBUG)
     Serial.println((int)item_length);
@@ -566,25 +577,35 @@ int fileCompareName(const void* a,const void* b)
 
 int fileCompare(const void* a,const void* b)
 {
-	if(((SdBaseFile*)a)->isDir())
+    SdBaseFile a_file,b_file;
+    a_file.open(SD.vwd(),*((uint16_t*)a),O_READ);
+    b_file.open(SD.vwd(),*((uint16_t*)b),O_READ);
+    Serial.println(F("check point 1"));
+    char name1[NAME_MAX_LENGTH],name2[NAME_MAX_LENGTH];
+	a_file.getName(name1,NAME_MAX_LENGTH-1);
+	b_file.getName(name2,NAME_MAX_LENGTH-1);
+	Serial.println(name1);Serial.println(name2);
+	while(!Serial.available()) ;
+	while(Serial.available() && Serial.read()) delay(10);
+	if(a_file.isDir())
 	{
-		if(((SdBaseFile*)b)->isDir())
+		if(b_file.isDir())
 		{
-			return fileCompareName(a,b);
+			return fileCompareName(&a_file,&b_file);
 		}
 		return -1;
 	}
-	if(((SdBaseFile*)b)->isDir())
+	if(b_file.isDir())
 	{
 		if(((SdBaseFile*)a)->isDir())
 		{
-			return fileCompareName(a,b);
+			return fileCompareName(&a_file,&b_file);
 		}
 		return 1;
 	}
 	dir_t _a,_b;
-	((SdBaseFile*)a)->dirEntry(&_a);
-	((SdBaseFile*)b)->dirEntry(&_b);
+	a_file.dirEntry(&_a);
+	b_file.dirEntry(&_b);
     if(_a.lastWriteDate==_b.lastWriteDate)
 	{
 		if(_a.lastWriteTime < _b.lastWriteTime) {return  1;}
@@ -592,7 +613,7 @@ int fileCompare(const void* a,const void* b)
 		return fileCompareName(a,b);
 	}
     else if (_a.lastWriteDate > _b.lastWriteDate) {return -1;}
-    else return 1;
+    return 1;
 }
 
 /** other **/
@@ -644,9 +665,12 @@ void printfilelist()
     for(;i<=LCD_ROWS;i++)
     {
         char temp[NAME_MAX_LENGTH];
-        fileList[i-2+item_head].getName(temp,NAME_MAX_LENGTH-2);
-        if(fileList[i-2].isDir()) strcat_P(temp,PSTR("/"));
+        SdBaseFile basefile;
+        basefile.open(SD.vwd(),fileList[i-2+item_head],O_READ);
+        basefile.getName(temp,NAME_MAX_LENGTH-2);
+        if(basefile.isDir()) strcat_P(temp,PSTR("/"));
         menuDisplay(temp,i);
+        basefile.close();
 
         #if defined(DEBUG)
         Serial.println(temp);

@@ -141,22 +141,25 @@ void serialEvent()
             temp+=c;
         }
     }
-    #else // DEBUG
+    #else // NOT_DEBUG
+    for(;Serial.peek()=='\r'||Serial.peek()=='\n';) Serial.read();
     String temp;
     for(uint32_t timeout=millis() ; millis() - timeout<SERIAL_TIMEOUT;)
     {
         if(Serial.available())
         {
+            timeout=millis();
             char c = Serial.read();
             if(c=='\r' || c=='\n') break;
             temp+=c;
         }
     }
+    for(;Serial.peek()=='\r'||Serial.peek()=='\n';) Serial.read();
     /*
     String temp = Serial.readStringUntil('\r');
     Serial.readStringUntil('\n'); // grbl response end by \r\n
     */
-    #endif
+    #endif // if DEBUG else
     if(bitRead(flag_controlState,RUNNING) && bitRead(flag_controlState,WAITING_RESPONSE))
     {
         if(equalsWithPgmString(temp.c_str(),PSTR("ok")))

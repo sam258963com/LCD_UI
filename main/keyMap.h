@@ -14,8 +14,8 @@
     #define ENCODER_B_PIN 3
 #endif // USE_ENCODER
 
-#define KEY_UP_PIN 5
-#define KEY_DOWN_PIN 6
+#define KEY_UP_PIN
+#define KEY_DOWN_PIN
 #define KEY_LEFT_PIN
 #define KEY_RIGHT_PIN
 

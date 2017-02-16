@@ -58,13 +58,6 @@ typedef int format_t;
 
     void flash();
     void clear();
-/*
-    #ifdef LCD_IIC
-        LiquidCrystal_I2C_ByVac *lcdsc;
-    #elif defined(LCD_PARALLEL_4) || defined(LCD_PARALLEL_8)
-        LiquidCrystal *lcdsc;
-    #endif
-*/
 
     void printf(int value,int width,bool zero = false);
     // void printf(const char *str,int width,format_t format = ALIGN_L);

@@ -116,7 +116,7 @@ void setup()
     key.setCallback(KEY_ENTER, enterCallback);
 
     // start
-    delay(500UL); // pause welcome scene at least 0.5s
+    delay(1000UL); // pause welcome scene at least 0.5s
     statusDisplay();
 }
 

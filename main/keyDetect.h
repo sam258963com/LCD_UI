@@ -32,7 +32,7 @@ private:
     void init();
 
     #if defined(USE_ENCODER)
-    uint8_t encoder_motion;
+    int8_t encoder_motion;
     inline void checkEncoder ();
     #endif // USE ENCODER
 };

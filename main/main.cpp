@@ -480,7 +480,7 @@ void act ()
 void homing ()
 {
     if(bitRead(flag_controlState,WAITING_RESPONSE)||bitRead(flag_controlState,RUNNING)) return;
-    Serial.println(F("G28"));
+    Serial.println(F("$H"));
     bitSet(flag_controlState, WAITING_RESPONSE);
 }
 

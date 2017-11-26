@@ -144,6 +144,7 @@ void serialEvent()
     #else // NOT_DEBUG
     for(;Serial.peek()=='\r'||Serial.peek()=='\n';) Serial.read();
     String temp;
+    //讀取資料
     for(uint32_t timeout=millis() ; millis() - timeout<SERIAL_TIMEOUT;)
     {
         if(Serial.available())
@@ -160,9 +161,10 @@ void serialEvent()
     Serial.readStringUntil('\n'); // grbl response end by \r\n
     */
     #endif // if DEBUG else
+    //讀旗標
     if(bitRead(flag_controlState,RUNNING) && bitRead(flag_controlState,WAITING_RESPONSE))
     {
-        if(equalsWithPgmString(temp.c_str(),PSTR("ok")))
+        if(equalsWithPgmString(temp.c_str(),PSTR("ok")))//讀OK
         {
             bitClear(flag_controlState,WAITING_RESPONSE);
         }
@@ -173,7 +175,7 @@ void serialEvent()
             printline(temp.c_str(),4);
             runfile.close();
             #if defined(DEBUG)
-            Serial.println(F("ERROR."));
+            Serial.println(F("ERROR."));//讀ERROR(需更改
             Serial.println(temp);
             #endif // define
             bitSet(flag_controlState,STANDBY);
@@ -535,7 +537,7 @@ void getfilelist()
 }
 
 /** --- **/
-
+//讀檔案(行讀取)讀一個位元 EOF=end of file
 inline void filereadline(FatFile& readfile,String& buffer)
 {
     for(int temp=readfile.read() ; temp!=EOF && (temp!='\r' && temp!='\n') ; temp=readfile.read())
@@ -545,7 +547,7 @@ inline void filereadline(FatFile& readfile,String& buffer)
     // read until no \r or \n
     for(int temp=readfile.peek() ; temp!=EOF&&(temp=='\r' || temp=='\n') ; temp=readfile.peek()) readfile.read();
 }
-
+//讀檔案
 bool sendLine()
 {
     String buffer;

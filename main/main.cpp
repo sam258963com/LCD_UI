@@ -77,12 +77,13 @@ enum controlState
 /**  **/
 
 // typedef bool submenu_t;
+//子目錄
 typedef struct {
     char title[LCD_COLS+1];
     void* pointto;
     bool hasSubmenu;
 }menulist;
-
+//目錄
 PROGMEM const menulist menu_0[] = {
 {"Status page"          , (void*)NULL     , false},
 {"Homing Setting"       , (void*)homing   , false},

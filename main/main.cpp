@@ -168,6 +168,7 @@ void serialEvent()
         if(equalsWithPgmString(temp.c_str(),PSTR("ok")))//讀OK
         {
             bitClear(flag_controlState,WAITING_RESPONSE);
+	    delay(100);
         }
         else
         {

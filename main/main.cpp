@@ -140,6 +140,7 @@ void serialEvent()
             char c = Serial.read();
             if(c=='\r' || c=='\n') break;
             temp+=c;
+            delay(10);
         }
     }
     #else // NOT_DEBUG
@@ -154,6 +155,7 @@ void serialEvent()
             char c = Serial.read();
             if(c=='\r' || c=='\n') break;
             temp+=c;
+            delay(10);
         }
     }
     for(;Serial.peek()=='\r'||Serial.peek()=='\n';) Serial.read();
@@ -165,10 +167,11 @@ void serialEvent()
     //讀旗標
     if(bitRead(flag_controlState,RUNNING) && bitRead(flag_controlState,WAITING_RESPONSE))
     {
+        delay(3000);
         if(equalsWithPgmString(temp.c_str(),PSTR("ok")))//讀OK
         {
             bitClear(flag_controlState,WAITING_RESPONSE);
-	    delay(100);
+            delay(10);
         }
         else
         {
@@ -183,6 +186,7 @@ void serialEvent()
             bitSet(flag_controlState,STANDBY);
             bitClear(flag_controlState,RUNNING);
             bitClear(flag_controlState,WAITING_RESPONSE);
+            delay(10);
         }
     }
     else
@@ -545,6 +549,7 @@ inline void filereadline(FatFile& readfile,String& buffer)
     for(int temp=readfile.read() ; temp!=EOF && (temp!='\r' && temp!='\n') ; temp=readfile.read())
     {
         buffer += (char)temp;
+        delay(5);
     }
     // read until no \r or \n
     for(int temp=readfile.peek() ; temp!=EOF&&(temp=='\r' || temp=='\n') ; temp=readfile.peek()) readfile.read();

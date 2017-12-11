@@ -14,7 +14,7 @@
  **/
 #include <SdFat.h>
 
-numberLine++;
+int numberLine = 0;
 
 keyDetect key;
 
@@ -462,7 +462,7 @@ void enterCallback()
 
 int GetTotalLineNum()
 {
-    int pos;
+    FatPos_t pos;
     runfile.getpos(&pos);
     int i;
     for(;sendLine();i++);
@@ -475,7 +475,7 @@ int GetProgress()
     static int Total = 0;
     if(Total == 0)
         Total = GetTotalLineNum();
-    return curLineNum/Total;
+    return curLineNum;
 }
 
 void act ()

@@ -14,6 +14,8 @@
  **/
 #include <SdFat.h>
 
+numberLine++;
+
 keyDetect key;
 
 SdFat SD;
@@ -458,6 +460,24 @@ void enterCallback()
 
 /** Action Function **/
 
+int GetTotalLineNum()
+{
+    int pos;
+    runfile.getpos(&pos);
+    int i;
+    for(;sendLine();i++);
+    runfile.setpos(&pos);
+    return i;
+}
+int curLineNum = 0;
+int GetProgress()
+{
+    static int Total = 0;
+    if(Total == 0)
+        Total = GetTotalLineNum();
+    return curLineNum/Total;
+}
+
 void act ()
 {
     if(bitRead(flag_controlState,RUNNING))
@@ -465,6 +485,7 @@ void act ()
         if(!bitRead(flag_controlState,WAITING_RESPONSE))
         {
             sendLine();
+            curLineNum++;
         }
     }
     if((flag_screen==STATUSPAGE) && millis()-pretime_status_screen>STATUS_SCREEN_CYCLE)
@@ -475,7 +496,7 @@ void act ()
         {
             statusSet(STATUS_RUN);
             customtime(millis()-run_start_time);
-            progressBar(runfile.curPosition()*100/runfile.fileSize());
+            progressBar(GetProgress());
         }
         else
         {
@@ -575,6 +596,7 @@ bool sendLine()
     }
     Serial.println(buffer);
     bitSet(flag_controlState,WAITING_RESPONSE);
+    numberLine++;
     return true;
 }
 

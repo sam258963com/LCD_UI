@@ -129,8 +129,8 @@ const unsigned char mainpage[LCD_SIZE] PROGMEM = {
 const unsigned char welcomepage[LCD_SIZE] PROGMEM = {
     ' ',' ',0xE5,0xDF,0x56,0xDF,0x29,0xDF,0x56,0xDF,0x29,0xE5,' ',' ',' ',' ',' ',' ',' ',' ',
     ' ',' ',' ',0xE5,0xDF,0x56,0xDF,0x29,0xDF,0x56,0xDF,0x29,0xE5,' ',' ',' ',' ',' ',' ',' ',
-    ' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','M','a','d','e',' ','B','y',' ',' ',
-    'L','o','a','d','i','n','g','.','.','.',' ','D','i','m','C','a','s','p','e','r'
+    'M','a','d','e',' ','B','y',' ','D','i','m','C','a','s','p','e','r',' ',' ',' ',
+    'L','o','a','d','i','n','g','.','.','.','Y','K','S','k','y',' ','L','B',' ',' '
 };
 #endif // 12864
 
